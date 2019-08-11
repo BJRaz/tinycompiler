@@ -4,6 +4,9 @@
 // antal        := digit{digit}[.digit{digit}]
 // enhed        := GRAM | G | KILO | KILOGRAM | KG | LITER | L
 // varenavn     := letter{letter}
+// digit        := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
+// letter       := 'a'...'z', 'æ', 'ø', 'å' | 'A' ... 'Z'. 'Æ', 'Ø', 'Å'
+
 
 enum TOKENS {
     ANTAL = 1,
