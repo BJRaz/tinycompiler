@@ -1,5 +1,5 @@
 // BNF:
-// indkøbsliste := indkøbsliste NL | liste
+// indkøbsliste := liste | indkøbsliste liste
 // liste        := antal enhed varenavn
 // antal        := digit{digit}[.digit{digit}]
 // enhed        := GRAM | G | KILO | KILOGRAM | KG | LITER | L
@@ -25,7 +25,7 @@ class Token {
 export class SimpleParser
 {
     tokens: Token[] = [];
-    input : string = "12.50 liter øl\n2 kg kaffe ";
+    input : string = "12.50 liter øl\n2 kg kaffe\n800 gram mel\n1.5 kilo guldkorn";
     tokenindex: number = 0;
     line: number = 0;
     /**
@@ -55,13 +55,20 @@ export class SimpleParser
                         let token : string[] = [];
                         token[token.length] = char;
                         let done = false; 
+                        let decimal = false;
                         while(!done) {
                             switch(nextchar) {
                                 case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
                                 case '.':
                                     {
+                                        if(decimal && nextchar == '.')
+                                            throw new Error('Unexpected decimal point ' + this.input.substring(0,index) + '<.>');
+                                        if(nextchar == '.')
+                                            decimal = true;                                    
                                         token[token.length] = nextchar;
+                                        
                                         nextchar = this.input.charAt(++index);
+                                        
                                     }
                                     break;
                                 default:
@@ -94,7 +101,7 @@ export class SimpleParser
                                     case 'kilogram':
                                     case 'l':
                                     case 'liter':
-                                            this.tokens[this.tokens.length] = new Token(TOKENS.ENHED, _token);
+                                            this.tokens[this.tokens.length] = new Token(TOKENS.ENHED, _token.toUpperCase());
                                             break;
                                     default:
                                             this.tokens[this.tokens.length] = new Token(TOKENS.VARENAVN, _token);
