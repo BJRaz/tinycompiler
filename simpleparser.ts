@@ -1,18 +1,19 @@
 // BNF:
-// indkøbsliste := liste | indkøbsliste liste
-// liste        := antal enhed varenavn
-// antal        := digit{digit}[.digit{digit}]
-// enhed        := GRAM | G | KILO | KILOGRAM | KG | LITER | L
-// varenavn     := letter{letter}
-// digit        := 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
-// letter       := 'a'...'z', 'æ', 'ø', 'å' | 'A' ... 'Z'. 'Æ', 'Ø', 'Å'
+// indkøbsliste ::= liste | indkøbsliste NL liste
+// liste        ::= antal enhed varenavn NL
+// antal        ::= digit{digit}[.digit{digit}]
+// enhed        ::= GRAM | G | KILO | KILOGRAM | KG | LITER | L
+// varenavn     ::= letter{letter}
+// digit        ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
+// letter       ::= 'a'...'z', 'æ', 'ø', 'å' | 'A' ... 'Z'. 'Æ', 'Ø', 'Å'
 
 
 enum TOKENS {
     ANTAL = 1,
     ENHED,
     VARENAVN,
-    NL  // newline
+    NL,  // newline
+    DUMMY 
 }
 
 class Token {
@@ -28,11 +29,13 @@ export class SimpleParser
     input : string = "12.50 liter øl\n2 kg kaffe\n800 gram mel\n1.5 kilo guldkorn";
     tokenindex: number = 0;
     line: number = 0;
+    current: Token;
+    
     /**
      *
      */
     constructor() {
-        
+        this.current = new Token(TOKENS.DUMMY);
     }
 
     scan() : void {
@@ -124,9 +127,9 @@ export class SimpleParser
 
         console.log('OK .. done..');
 
-        this.tokens.forEach(element => {
-            console.log(TOKENS[element.type] + " " + element.value);
-        });
+        // this.tokens.forEach(element => {
+        //     console.log(TOKENS[element.type] + " " + element.value);
+        // });
     }
 
 
@@ -135,78 +138,69 @@ export class SimpleParser
     parse() : void {
         this.tokenindex = 0;
         this.line = 1;
-        while(this.antal() != null) {
-            this.enhed();
-            this.varenavn();
-            
-        }
         
+        while(this.hasMoreTokens()) {
+            this.nextToken();
+            this.antal();
+                    
+        }        
     } 
 
-    private varenavn() {
-        let token = this.nextToken();
-        if(!token)
-            return token;
-        if(token && token.type == TOKENS.VARENAVN) {
-            let antal = parseFloat(token.value);       
-            this.newline();
-        } else 
-            throw new Error('Unexpected token ' + TOKENS[token.type] + '(' + token.value +'), should be VARENAVN - line: ' + this.line);
-    }
-
-    private newline() {
-        let token = this.nextToken();
-
-        if(!token)
-            return token;
-        if(token && token.type == TOKENS.NL) {
-            this.line++;
+    private match(type: TOKENS) {
+        if(this.hasMoreTokens()) {
+            this.nextToken();
+            return this.current.type == type;
         }
+        return false;
     }
-
-    private antal() : Token |  null {
-        let token = this.nextToken();
-
-        if(!token)
-            return token;
-        if(token && token.type == TOKENS.ANTAL) {
-            let antal = parseFloat(token.value);    
-            console.log("Antal er: " + antal);   
+    
+    private antal() {
+        let antal = parseFloat(this.current.value);    
+        console.log("Antal er: " + antal);   
+        if(this.match(TOKENS.ENHED)) {
+            this.enhed();
         } else 
-            throw new Error('Unexpected token ' + TOKENS[token.type] + '('+ token.value+'), should be ANTAL - line: ' + this.line);
-        return token;
+            throw new Error('Unexpected token ' + TOKENS[this.current.type] + '(' + this.current.value +'), should be ENHED - line: ' + this.line);    
     }
 
     private enhed() {
-        let token = this.nextToken();
-
-        if(!token)
-            return token;
-        if(token && token.type == TOKENS.ENHED) {
-            let enhed = token.value.toUpperCase();
-            switch(enhed) {
-                case 'KG':case 'KILO':case 'KILOGRAM':
-                    {}
-                    break;
-                case 'L':case 'LITER':
-                    {}
-                    break;
-                case 'G':case 'GRAM':
-                    {}
-                    break;
-                default: {
-                    throw new Error('unit not recognized ' + TOKENS[token.type] + ', ' + token.value + ' - line: ' + this.line);
-                }
+        let enhed = this.current.value.toUpperCase();
+        switch(enhed) {
+            case 'KG':case 'KILO':case 'KILOGRAM':
+                {}
+                break;
+            case 'L':case 'LITER':
+                {}
+                break;
+            case 'G':case 'GRAM':
+                {}
+                break;
+            default: {
+                throw new Error('unit not recognized ' + TOKENS[this.current.type] + ', ' + this.current.value + ' - line: ' + this.line);
             }
+        }
+        // do something
+        console.log('Enhed: ' + this.current.value);
+        if(this.match(TOKENS.VARENAVN)) {
+            this.varenavn();
         } else 
-            throw new Error('Unexpected token ' + TOKENS[token.type] + '('+ token.value+'), should be ENHED - line: ' + this.line);
+            throw new Error('Unexpected token ' + TOKENS[this.current.type] + '(' + this.current.value +'), should be VARENAVN - line: ' + this.line);
     }
 
-    private nextToken() : Token | null {
-        if(this.tokenindex < this.tokens.length)
-            return this.tokens[this.tokenindex++];
-        return null;
+    private varenavn() {
+        // do something      
+        console.log('Varenavn: ' + this.current.value);
+        if(this.match(TOKENS.NL)) {
+            this.line++;
+        } 
     }
 
+    private nextToken() {
+        this.current = this.tokens[this.tokenindex++];
+    }
+
+    private hasMoreTokens(): boolean {
+        return this.tokenindex < this.tokens.length;
+    }
 
 }
