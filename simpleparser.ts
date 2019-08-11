@@ -1,6 +1,6 @@
 // BNF:
-// indkøbsliste := indkøbsliste | liste
-// liste        := antal enhed varenavn NL
+// indkøbsliste := indkøbsliste NL | liste
+// liste        := antal enhed varenavn
 // antal        := digit{digit}[.digit{digit}]
 // enhed        := GRAM | G | KILO | KILOGRAM | KG | LITER | L
 // varenavn     := letter{letter}
