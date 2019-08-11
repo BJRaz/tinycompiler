@@ -1,0 +1,4 @@
+bin/*.js
+bin/*.js.map
+.vscode
+
