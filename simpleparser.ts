@@ -1,9 +1,9 @@
 // BNF:
-// indkøbsliste ::= liste | indkøbsliste NL liste
+// indkøbsliste ::= liste | indkøbsliste liste
 // liste        ::= antal enhed varenavn NL
 // antal        ::= digit{digit}[.digit{digit}]
 // enhed        ::= GRAM | G | KILO | KILOGRAM | KG | LITER | L
-// varenavn     ::= letter{letter}
+// varenavn     ::= letter{letter | digit}
 // digit        ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 
 // letter       ::= 'a'...'z', 'æ', 'ø', 'å' | 'A' ... 'Z'. 'Æ', 'Ø', 'Å'
 
@@ -26,16 +26,16 @@ class Token {
 export class SimpleParser
 {
     tokens: Token[] = [];
-    input : string = "12.50 liter øl\n2 kg kaffe\n800 gram mel\n1.5 kilo guldkorn";
+    input : string = "4 liter øl\n1 kg kaffe\n800 gram mel\n4 l guldkorn";
     tokenindex: number = 0;
     line: number = 0;
-    current: Token;
+    currentToken: Token;
     
     /**
      *
      */
     constructor() {
-        this.current = new Token(TOKENS.DUMMY);
+        this.currentToken = new Token(TOKENS.DUMMY);
     }
 
     scan() : void {
@@ -127,9 +127,9 @@ export class SimpleParser
 
         console.log('OK .. done..');
 
-        // this.tokens.forEach(element => {
-        //     console.log(TOKENS[element.type] + " " + element.value);
-        // });
+        this.tokens.forEach(element => {
+            console.log('Element: ' + TOKENS[element.type] + " (" + element.value + ')');
+        });
     }
 
 
@@ -140,31 +140,32 @@ export class SimpleParser
         this.line = 1;
         
         while(this.hasMoreTokens()) {
-            this.nextToken();
-            this.antal();
-                    
+            if(this.nextTokenMatch(TOKENS.ANTAL))
+                this.antal();
+            else
+               throw new Error('Unexpected token ' + TOKENS[this.currentToken.type] + '(' + this.currentToken.value +'), should be ANTAL - line: ' + this.line);    
         }        
     } 
 
-    private match(type: TOKENS) {
+    private nextTokenMatch(type: TOKENS) {
         if(this.hasMoreTokens()) {
             this.nextToken();
-            return this.current.type == type;
+            return this.currentToken.type == type;
         }
         return false;
     }
     
     private antal() {
-        let antal = parseFloat(this.current.value);    
+        let antal = parseFloat(this.currentToken.value);    
         console.log("Antal er: " + antal);   
-        if(this.match(TOKENS.ENHED)) {
+        if(this.nextTokenMatch(TOKENS.ENHED)) {
             this.enhed();
         } else 
-            throw new Error('Unexpected token ' + TOKENS[this.current.type] + '(' + this.current.value +'), should be ENHED - line: ' + this.line);    
+            throw new Error('Unexpected token ' + TOKENS[this.currentToken.type] + '(' + this.currentToken.value +'), should be ENHED - line: ' + this.line);    
     }
 
     private enhed() {
-        let enhed = this.current.value.toUpperCase();
+        let enhed = this.currentToken.value.toUpperCase();
         switch(enhed) {
             case 'KG':case 'KILO':case 'KILOGRAM':
                 {}
@@ -176,27 +177,27 @@ export class SimpleParser
                 {}
                 break;
             default: {
-                throw new Error('unit not recognized ' + TOKENS[this.current.type] + ', ' + this.current.value + ' - line: ' + this.line);
+                throw new Error('unit not recognized ' + TOKENS[this.currentToken.type] + ', ' + this.currentToken.value + ' - line: ' + this.line);
             }
         }
         // do something
-        console.log('Enhed: ' + this.current.value);
-        if(this.match(TOKENS.VARENAVN)) {
+        console.log('Enhed: ' + this.currentToken.value);
+        if(this.nextTokenMatch(TOKENS.VARENAVN)) {
             this.varenavn();
         } else 
-            throw new Error('Unexpected token ' + TOKENS[this.current.type] + '(' + this.current.value +'), should be VARENAVN - line: ' + this.line);
+            throw new Error('Unexpected token ' + TOKENS[this.currentToken.type] + '(' + this.currentToken.value +'), should be VARENAVN - line: ' + this.line);
     }
 
     private varenavn() {
         // do something      
-        console.log('Varenavn: ' + this.current.value);
-        if(this.match(TOKENS.NL)) {
+        console.log('Varenavn: ' + this.currentToken.value);
+        if(this.nextTokenMatch(TOKENS.NL)) {
             this.line++;
         } 
     }
 
     private nextToken() {
-        this.current = this.tokens[this.tokenindex++];
+        this.currentToken = this.tokens[this.tokenindex++];
     }
 
     private hasMoreTokens(): boolean {
