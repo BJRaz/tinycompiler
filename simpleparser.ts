@@ -26,7 +26,6 @@ class Token {
 export class SimpleParser
 {
     tokens: Token[] = [];
-    input : string = "4 liter øl\n1 kg kaffe\n800 gram mel\n4 l guldkorn";
     tokenindex: number = 0;
     line: number = 0;
     currentToken: Token;
@@ -34,7 +33,7 @@ export class SimpleParser
     /**
      *
      */
-    constructor() {
+    constructor(protected input: string) {
         this.currentToken = new Token(TOKENS.DUMMY);
     }
 
@@ -125,7 +124,7 @@ export class SimpleParser
                 break;    
         }
 
-        console.log('OK .. done..');
+        console.log('OK .. SCAN done.. listing tokens: ');
 
         this.tokens.forEach(element => {
             console.log('Element: ' + TOKENS[element.type] + " (" + element.value + ')');
@@ -138,13 +137,16 @@ export class SimpleParser
     parse() : void {
         this.tokenindex = 0;
         this.line = 1;
-        
-        while(this.hasMoreTokens()) {
-            if(this.nextTokenMatch(TOKENS.ANTAL))
-                this.antal();
-            else
-               throw new Error('Unexpected token ' + TOKENS[this.currentToken.type] + '(' + this.currentToken.value +'), should be ANTAL - line: ' + this.line);    
-        }        
+        try {
+            while(this.hasMoreTokens()) {
+                if(this.nextTokenMatch(TOKENS.ANTAL))
+                    this.antal();
+                else
+                throw new Error('Unexpected token ' + TOKENS[this.currentToken.type] + '(' + this.currentToken.value +'), should be ANTAL - line: ' + this.line);    
+            }           
+        } catch (error) {
+            console.log("PARSE ERROR: " + error);
+        }
     } 
 
     private nextTokenMatch(type: TOKENS) {
