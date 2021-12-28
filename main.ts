@@ -8,7 +8,7 @@ class Main{
         // parser.scan();
         // parser.parse();
 
-        var p = new RomanNumeralsParser('MDCXCV');
+        var p = new RomanNumeralsParser('DCCCCCCCCCCCCCCCCCCCCCCCCCC');
         console.log(p.parse());
 
 

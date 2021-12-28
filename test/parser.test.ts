@@ -39,6 +39,10 @@ test('XIX = 19', () => {
 });
 
 
+test('MDCXCV = 1695', () => {
+    var p = new RomanNumeralsParser('MDCXCV');
+    expect(p.parse()).toBe(1695);
+});
 test('MCMLXXV = 1975', () => {
     var p = new RomanNumeralsParser('MCMLXXV');
     expect(p.parse()).toBe(1975);

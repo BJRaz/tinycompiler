@@ -1,4 +1,12 @@
-
+enum N {
+    M = 1000,
+    D = 500,
+    C = 100,
+    L = 50,
+    X = 10,
+    V = 5,
+    I = 1
+}
 
 export class RomanNumeralsParser
 {
@@ -8,105 +16,108 @@ export class RomanNumeralsParser
         this.input = input;
     }
 
+   
+
     public parse() : number {
-        let inputlen = this.input.length;
-        let char = this.input.charAt(0);
+        let input = this.input;
+        let char = input.charAt(0);
         let index = 0;
         let numbers: number[] = []; 
+        
+        function getNextchar() {
+            return input.charAt(++index);
+        }
+
         while(true) {
-            let nextChar = this.input.charAt(++index);
+            let nextChar = getNextchar();
             switch(char) {
                 case 'M': 
-                    numbers.push(1000);
-                    char = nextChar;
+                    numbers.push(N.M);
                     break;
                 case 'D': 
-                    numbers.push(500);
-                    switch(nextChar) {
-                        case 'M':
-                        {
-                            numbers.pop();
-                            numbers.push(500);
-                            nextChar = this.input.charAt(++index);                                
-                        }
-                        break;
-                    }
-                    char = nextChar;
+                    numbers.push(N.D);
                     break;
                 case 'C': 
-                    numbers.push(100);
+                    numbers.push(N.C);
                     switch(nextChar) {
                         case 'M':
-                        {
-                            numbers.pop();
-                            numbers.push(900);
-                            nextChar = this.input.charAt(++index); 
-                            break;                               
-                        }
+                            {
+                                //@ts-ignore
+                                numbers.push(N.M - numbers.pop());
+                                nextChar = getNextchar(); 
+                                break;                               
+                            }
                         case 'D':
-                        {
-                            numbers.pop();
-                            numbers.push(400);
-                            nextChar = this.input.charAt(++index);                                
-                            break;
-                        }                        
+                            {
+                                //@ts-ignore
+                                numbers.push(N.D - numbers.pop());
+                                nextChar = getNextchar();                                
+                                break;
+                            }   
+                        // case 'C':
+                        //     {
+                        //         // TODO: refactor to only allow 3 consecutive 'C's
+                        //         numbers.push(N.C);
+                        //         let idx = index;    // index points at lastChar
+                        //         while((nextChar = getNextchar()) == 'C')
+                        //             numbers.push(N.C); 
+                        //         break; 
+                        //     }                     
                     }
-                    char = nextChar;
                     break;
                 case 'L': 
-                    numbers.push(50);
-                    char = nextChar;
+                    numbers.push(N.L);
                     break;
                 case 'X': 
-                    numbers.push(10);
+                    numbers.push(N.X);
                     switch(nextChar) {
                         case 'C':
                         {
-                            numbers.pop();
-                            numbers.push(90);
-                            nextChar = this.input.charAt(++index);  
+                            //@ts-ignore
+                            numbers.push(N.C - numbers.pop());
+                            nextChar = getNextchar();  
                             break;                              
                         }
                         case 'L':
                         {
-                            numbers.pop();
-                            numbers.push(40);
-                            nextChar = this.input.charAt(++index);                                
+                            //@ts-ignore
+                            numbers.push(N.L - numbers.pop());
+                            nextChar = getNextchar();                                
                             break;
                         }
                     }
-                    char = nextChar;
                     break;
                 case 'V': 
-                    numbers.push(5);
-                    char = nextChar;
+                    numbers.push(N.V);
                     break;
                 case 'I':
                     {
-                        numbers.push(1);
+                        numbers.push(N.I);
                         switch(nextChar) {
                             case 'X':
                             {
-                                numbers.pop();
-                                numbers.push(9);
-                                nextChar = this.input.charAt(++index);  
+                                //@ts-ignore
+                                numbers.push(N.X - numbers.pop());
+                                nextChar = getNextchar();  
                                 break;                              
                             }
                             case 'V':
                             {
-                                numbers.pop();
-                                numbers.push(4);
-                                nextChar = this.input.charAt(++index);                                
+                                //@ts-ignore
+                                numbers.push(N.V - numbers.pop());
+                                nextChar = getNextchar();                                
                                 break;
                             }
                         }
-                        char = nextChar;
                         break;
                     }
                 default:
-                    throw new Error('Unknown character: ' + char);
+                    throw new Error('Unknown character: "' + char + '"');
 
             }
+
+            char = nextChar;
+
             if(char == '' || char == undefined)
                 break;  
         }        
