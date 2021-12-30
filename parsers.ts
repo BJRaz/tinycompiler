@@ -1,3 +1,136 @@
+enum N {
+    M = 1000,
+    D = 500,
+    C = 100,
+    L = 50,
+    X = 10,
+    V = 5,
+    I = 1
+}
+
+export class RomanNumeralsParser
+{
+    input: string;
+
+    constructor(input : string) {
+        this.input = input;
+    }
+
+   
+
+    public parse() : number {
+        const input = this.input;
+        let char = input.charAt(0);
+        let index = 0;
+        const numbers: number[] = []; 
+            
+        function getNextchar() {
+            return input.charAt(++index);
+        }
+
+        const loop = true;
+        while(loop) {
+            let nextChar = getNextchar();
+            switch(char) {
+                case 'M': 
+                    numbers.push(N.M);
+                    break;
+                case 'D': 
+                    numbers.push(N.D);
+                    break;
+                case 'C': 
+                    numbers.push(N.C);
+                    switch(nextChar) {
+                        case 'M':
+                            {
+                                //@ts-ignore
+                                numbers.push(N.M - numbers.pop());
+                                nextChar = getNextchar(); 
+                                break;                               
+                            }
+                        case 'D':
+                            {
+                                //@ts-ignore
+                                numbers.push(N.D - numbers.pop());
+                                nextChar = getNextchar();                                
+                                break;
+                            }   
+                        // case 'C':
+                        //     {
+                        //         // TODO: refactor to only allow 3 consecutive 'C's
+                        //         numbers.push(N.C);
+                        //         let idx = index;    // index points at lastChar
+                        //         while((nextChar = getNextchar()) == 'C')
+                        //             numbers.push(N.C); 
+                        //         break; 
+                        //     }                     
+                    }
+                    break;
+                case 'L': 
+                    numbers.push(N.L);
+                    break;
+                case 'X': 
+                    numbers.push(N.X);
+                    switch(nextChar) {
+                        case 'C':
+                        {
+                            //@ts-ignore
+                            numbers.push(N.C - numbers.pop());
+                            nextChar = getNextchar();  
+                            break;                              
+                        }
+                        case 'L':
+                        {
+                            //@ts-ignore
+                            numbers.push(N.L - numbers.pop());
+                            nextChar = getNextchar();                                
+                            break;
+                        }
+                    }
+                    break;
+                case 'V': 
+                    numbers.push(N.V);
+                    break;
+                case 'I':
+                    {
+                        numbers.push(N.I);
+                        switch(nextChar) {
+                            case 'X':
+                            {
+                                //@ts-ignore
+                                numbers.push(N.X - numbers.pop());
+                                nextChar = getNextchar();  
+                                break;                              
+                            }
+                            case 'V':
+                            {
+                                //@ts-ignore
+                                numbers.push(N.V - numbers.pop());
+                                nextChar = getNextchar();                                
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                default:
+                    throw new Error('Unknown character: "' + char + '"');
+
+            }
+
+            char = nextChar;
+
+            if(char == '' || char == undefined)
+                break;  
+        }        
+        let result = 0;
+        numbers.forEach(n => {
+            result += n;
+        });
+
+        return result;
+    }
+}
+
 // BNF:
 // indkøbsliste ::= liste | indkøbsliste liste
 // liste        ::= antal enhed varenavn NL
@@ -20,14 +153,14 @@ class Token {
     constructor(public type: TOKENS, public value: string = '') {
 
     }
-};
+}
 
 
 export class SimpleParser
 {
     tokens: Token[] = [];
-    tokenindex: number = 0;
-    line: number = 0;
+    tokenindex = 0;
+    line = 0;
     currentToken: Token;
     
     /**
@@ -38,10 +171,11 @@ export class SimpleParser
     }
 
     scan() : void {
-        let inputlen = this.input.length;
+        const inputlen = this.input.length;
         let index = 0;
         let char = this.input.charAt(0);
-        while(true) {
+        const loop = true;
+        while(loop) {
             let nextchar = this.input.charAt(++index);
 
             switch(char) {
@@ -54,7 +188,7 @@ export class SimpleParser
                     break;
                 case '0':case '1':case '2':case '3':case '4':case '5':case '6':case '7':case '8':case '9':
                     {
-                        let token : string[] = [];
+                        const token : string[] = [];
                         token[token.length] = char;
                         let done = false; 
                         let decimal = false;
@@ -87,14 +221,14 @@ export class SimpleParser
                 default:
                     {       
                         
-                        let token: string[] = [];
+                        const token: string[] = [];
                         token[token.length] = char;
                         let done = false;                 
                         while(!done) {
 
                             if(nextchar == ' ' || nextchar == '' || nextchar == '\n') {
                                 // done reading lexeme, decide action:
-                                let _token = token.join('');
+                                const _token = token.join('');
                                 switch(_token) {
                                     case 'g':
                                     case 'gram':
@@ -158,7 +292,7 @@ export class SimpleParser
     }
     
     private antal() {
-        let antal = parseFloat(this.currentToken.value);    
+        const antal = parseFloat(this.currentToken.value);    
         console.log("Antal er: " + antal);   
         if(this.nextTokenMatch(TOKENS.ENHED)) {
             this.enhed();
@@ -167,16 +301,13 @@ export class SimpleParser
     }
 
     private enhed() {
-        let enhed = this.currentToken.value.toUpperCase();
+        const enhed = this.currentToken.value.toUpperCase();
         switch(enhed) {
             case 'KG':case 'KILO':case 'KILOGRAM':
-                {}
                 break;
             case 'L':case 'LITER':
-                {}
                 break;
             case 'G':case 'GRAM':
-                {}
                 break;
             default: {
                 throw new Error('unit not recognized ' + TOKENS[this.currentToken.type] + ', ' + this.currentToken.value + ' - line: ' + this.line);

@@ -1,14 +1,13 @@
-import { SimpleParser } from "./simpleparser";
-import { RomanNumeralsParser } from "./romannumeralsparser";
+import { RomanNumeralsParser, SimpleParser } from "./parsers";
 
 class Main{
     public static Start(): number {
-        // let input = "1 liter øl\n1 kg kaffe\n800 gram mel\n4 kg guldkorn";
-        // var parser = new SimpleParser(input);
-        // parser.scan();
-        // parser.parse();
+        const input = "1 liter øl\n1 kg kaffe\n800 gram mel\n4 kg guldkorn";
+        const parser = new SimpleParser(input);
+        parser.scan();
+        parser.parse();
 
-        var p = new RomanNumeralsParser('DCCCCCCCCCCCCCCCCCCCCCCCCCC');
+        const p = new RomanNumeralsParser('DCCCXIIIXXXXX');
         console.log(p.parse());
 
 
