@@ -1,4 +1,4 @@
-import * as parsers from "../parsers";
+import * as parsers from "../src/parsers";
 
 test('X = 10', () => {
     const p = new parsers.RomanNumeralsParser('X');
